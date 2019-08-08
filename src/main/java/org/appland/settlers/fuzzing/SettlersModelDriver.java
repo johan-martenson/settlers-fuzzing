@@ -211,8 +211,14 @@ public class SettlersModelDriver {
 
             quota = arguments.getIntFor2Chars();
         } catch (Throwable t) {
+            System.out.println("CHANGE FOOD ALLOCATION - FAILED");
+
             throw new SettlersModelDriverException();
         }
+
+        System.out.println("CHANGE FOOD ALLOCATION");
+        System.out.println(" - Building: " + buildingClass);
+        System.out.println(" - Quota: " + quota);
 
         player.setFoodQuota(buildingClass, quota);
     }
@@ -230,8 +236,14 @@ public class SettlersModelDriver {
                 throw new SettlersModelDriverException();
             }
         } catch (Throwable t) {
+            System.out.println("CHANGE COAL ALLOCATION - FAILED");
+
             throw new SettlersModelDriverException();
         }
+
+        System.out.println("CHANGE COAL ALLOCATION");
+        System.out.println(" - Building: " + buildingClass);
+        System.out.println(" - Quota: "  + quota);
 
         player.setCoalQuota(buildingClass, quota);
     }
@@ -252,8 +264,14 @@ public class SettlersModelDriver {
                 throw new SettlersModelDriverException();
             }
         } catch (Throwable t) {
+            System.out.println("CHANGE TRANSPORTATION PRIORITY - FAILED");
+
             throw new SettlersModelDriverException();
         }
+
+        System.out.println("CHANGE TRANSPORTATION PRIORITY");
+        System.out.println(" - Priority: " + priority);
+        System.out.println(" - Material: " + material);
 
         player.setTransportPriority(priority, material);
     }
@@ -273,10 +291,13 @@ public class SettlersModelDriver {
                 throw new Exception();
             }
         } catch (Throwable t) {
-            System.out.println(t);
+            System.out.println("CALL SCOUT - FAILED");
 
             throw new SettlersModelDriverException();
         }
+
+        System.out.println("CALL SCOUT");
+        System.out.println(" - Flag: " + flag);
 
         flag.callScout();
     }
@@ -296,10 +317,13 @@ public class SettlersModelDriver {
                 throw new Exception();
             }
         } catch (Throwable t) {
-            System.out.println(t);
+            System.out.println("CALL GEOLOGIST - FAILED");
 
             throw new SettlersModelDriverException();
         }
+
+        System.out.println("CALL GEOLOGIST");
+        System.out.println(" - Flag: " + flag);
 
         flag.callGeologist();
     }
@@ -311,8 +335,13 @@ public class SettlersModelDriver {
             int buildingIndex = arguments.getIntFor2Chars();
             building = map.getBuildings().get(buildingIndex);
         } catch (Throwable t) {
+            System.out.println("STOP PRODUCTION - FAILED");
+
             throw new SettlersModelDriverException();
         }
+
+        System.out.println("STOP PRODUCTION");
+        System.out.println(" - Building: " + building);
 
         building.stopProduction();
     }
@@ -324,15 +353,18 @@ public class SettlersModelDriver {
             int buildingIndex = arguments.getIntFor2Chars();
             building = map.getBuildings().get(buildingIndex);
         } catch (Throwable t) {
+            System.out.println("START PRODUCTION - FAILED");
+
             throw new SettlersModelDriverException();
         }
+
+        System.out.println("START PRODUCTION");
+        System.out.println(" - Building: " + building);
 
         building.resumeProduction();
     }
 
     private static void setVegetationDownRight(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
-        System.out.println("SET VEGETATION DOWN RIGHT: ");
-
         Tile.Vegetation vegetation = null;
         Point point = null;
 
@@ -351,9 +383,12 @@ public class SettlersModelDriver {
                     arguments.getIntFor3Chars()
             );
         } catch (Throwable t) {
+            System.out.println("SET VEGETATION DOWN RIGHT - FAILED");
+
             throw new SettlersModelDriverException();
         }
 
+        System.out.println("SET VEGETATION DOWN RIGHT");
         System.out.println(" - Point: " + point);
         System.out.println(" - Vegetation: " + vegetation);
 
@@ -362,8 +397,6 @@ public class SettlersModelDriver {
     }
 
     private static void setVegetationBelow(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
-        System.out.println("SET VEGETATION BELOW");
-
         Tile.Vegetation vegetation = null;
         Point point = null;
 
@@ -381,9 +414,12 @@ public class SettlersModelDriver {
                     arguments.getIntFor3Chars()
             );
         } catch (Throwable t) {
+            System.out.println("SET VEGETATION BELOW - FAILED");
+
             throw new SettlersModelDriverException();
         }
 
+        System.out.println("SET VEGETATION BELOW");
         System.out.println(" - Point: " + point);
         System.out.println(" - Vegetation: " + vegetation);
 
@@ -401,8 +437,6 @@ public class SettlersModelDriver {
     private static void deleteBuilding(GameMap map, ArgumentsHandler arguments) throws Exception {
         Building building = null;
 
-        System.out.println("DELETE_BUILDING_AT_POINT");
-
         try {
             Point point = new Point(
                     arguments.getIntFor3Chars(),
@@ -415,10 +449,13 @@ public class SettlersModelDriver {
             }
 
         } catch (Throwable t) {
-            System.out.println(t);
+            System.out.println("DELETE_BUILDING_AT_POINT - FAILED");
 
             throw new SettlersModelDriverException();
         }
+
+        System.out.println("DELETE_BUILDING_AT_POINT");
+        System.out.println(" - Building: " + building);
 
         building.tearDown();
     }
@@ -431,9 +468,6 @@ public class SettlersModelDriver {
      * @param arguments
      */
     private static void raiseBuilding(GameMap map, ArgumentsHandler arguments) throws Exception {
-
-        System.out.println("RAISE BUILDING: ");
-
         Building building = null;
         Point point = null;
 
@@ -445,13 +479,16 @@ public class SettlersModelDriver {
                     arguments.getIntFor3Chars()
             );
         } catch (Throwable t) {
-            System.out.println(t);
+            System.out.println("RAISE BUILDING - FAILED");
+
             throw new SettlersModelDriverException();
         }
 
+        System.out.println("RAISE BUILDING");
+        System.out.println(" - Building: " + building);
+        System.out.println(" - Point: " + point);
+
         map.placeBuilding(building, point);
-        //System.out.println(" -- placed building " + building + " at " + building.getPosition());
-        //System.out.println(" -- Flag is " + building.getFlag() + ", road to flag " + map.getRoad(building.getPosition(), building.getFlag().getPosition()));
     }
 
     private static Building createBuilding(Player player, int parseInt) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
@@ -495,10 +532,13 @@ public class SettlersModelDriver {
                 return;
             }
         } catch (Throwable t) {
+            System.out.println("FAST FORWARD - FAILED");
+
             throw new SettlersModelDriverException();
         }
 
-        System.out.println("Fast forward: " + iterations);
+        System.out.println("FAST FORWARD");
+        System.out.println(" - Iterations: " + iterations);
 
         for (int i = 0; i < iterations; i++) {
 
@@ -510,8 +550,6 @@ public class SettlersModelDriver {
 
         Flag flag = null;
 
-        System.out.println("DELETE FLAG AT POINT");
-
         try {
             Point point = new Point(
                     arguments.getIntFor3Chars(),
@@ -520,8 +558,13 @@ public class SettlersModelDriver {
 
             flag = map.getFlagAtPoint(point);
         } catch (Throwable t) {
+            System.out.println("DELETE FLAG AT POINT - FAILED");
+
             throw  new SettlersModelDriverException();
         }
+
+        System.out.println("DELETE FLAG AT POINT");
+        System.out.println(" - Flag: " + flag);
 
         map.removeFlag(flag);
     }
@@ -538,8 +581,6 @@ public class SettlersModelDriver {
         Player player = null;
         Point point = null;
 
-        System.out.println("RAISE FLAG");
-
         try {
             int playerIndex = arguments.getIntFor1Chars();
 
@@ -550,11 +591,15 @@ public class SettlersModelDriver {
 
             player = map.getPlayers().get(playerIndex);
         } catch (Throwable t) {
+            System.out.println("RAISE FLAG - FAILED");
+
             throw new SettlersModelDriverException();
         }
 
-        map.placeFlag(player, point);
+        System.out.println("RAISE FLAG");
+        System.out.println(" - Point: " + point);
 
+        map.placeFlag(player, point);
     }
 
     /**
@@ -567,8 +612,6 @@ public class SettlersModelDriver {
 
         Road road = null;
 
-        System.out.println("DELETE ROAD AT POINT");
-
         try {
             Point point = new Point(
                     arguments.getIntFor3Chars(),
@@ -577,8 +620,13 @@ public class SettlersModelDriver {
 
             road = map.getRoadAtPoint(point);
         } catch (Throwable t) {
+            System.out.println("DELETE ROAD AT POINT - FAILED");
+
             throw new SettlersModelDriverException();
         }
+
+        System.out.println("DELETE ROAD AT POINT");
+        System.out.println(" - Road: " + road);
 
         map.removeRoad(road);
     }
@@ -603,8 +651,6 @@ public class SettlersModelDriver {
         Point end = null;
         Player player = null;
 
-        System.out.println("PLACE ROAD AUTOMATICALLY");
-
         try {
             int playerIndex = arguments.getIntFor1Chars();
 
@@ -619,9 +665,12 @@ public class SettlersModelDriver {
 
             player = map.getPlayers().get(playerIndex);
         } catch (Throwable t) {
+            System.out.println("PLACE ROAD AUTOMATICALLY - FAILED");
+
             throw new SettlersModelDriverException();
         }
 
+        System.out.println("PLACE ROAD AUTOMATICALLY");
         System.out.println(" - Start: " + start);
         System.out.println(" - End: " + end);
         System.out.println(" - Player: " + player);
