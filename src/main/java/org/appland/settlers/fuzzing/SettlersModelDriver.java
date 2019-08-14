@@ -3,6 +3,7 @@ package org.appland.settlers.fuzzing;
 import org.appland.settlers.maps.MapFile;
 import org.appland.settlers.maps.MapLoader;
 import org.appland.settlers.model.*;
+import org.appland.settlers.utils.TestCaseGenerator;
 
 import java.awt.Color;
 import java.io.*;
@@ -24,6 +25,7 @@ public class SettlersModelDriver {
 
     private static final Map<Integer, Class<? extends Building>> buildingClassMap = new HashMap<>();
     private static final Map<Integer, Tile.Vegetation> vegetationMap = new HashMap<>();
+    private static final TestCaseGenerator testCaseGenerator = new TestCaseGenerator();
 
     public static void main( String[] args ) throws Exception {
 
@@ -119,25 +121,13 @@ public class SettlersModelDriver {
                         }
                         break;
                     case "2": // DELETE_ROAD POINT.X POINT.Y
-                        try {
-                            deleteRoadAtPoint(map, arguments);
-                        } catch (NullPointerException e) {
-                            System.out.println(e);
-                        }
+                        deleteRoadAtPoint(map, arguments);
                         break;
                     case "3": // RAISE_FLAG PLAYER_ID POINT.X POINT.Y
-                        try {
-                            raiseFlag(map, arguments);
-                        } catch (Exception e) {
-                            System.out.println(e);
-                        }
+                        raiseFlag(map, arguments);
                         break;
                     case "4": //""DELETE_FLAG":
-                        try {
-                            deleteFlagAtPoint(map, arguments);
-                        } catch (Exception e) {
-                            System.out.println(e);
-                        }
+                        deleteFlagAtPoint(map, arguments);
                         break;
                     case "5": //""FAST_FORWARD":
                         fastForward(map, arguments);
@@ -299,6 +289,8 @@ public class SettlersModelDriver {
         System.out.println("CALL SCOUT");
         System.out.println(" - Flag: " + flag);
 
+        testCaseGenerator.recordCallScout(flag);
+
         flag.callScout();
     }
 
@@ -324,6 +316,8 @@ public class SettlersModelDriver {
 
         System.out.println("CALL GEOLOGIST");
         System.out.println(" - Flag: " + flag);
+
+        testCaseGenerator.recordCallGeologist(flag);
 
         flag.callGeologist();
     }
@@ -367,6 +361,7 @@ public class SettlersModelDriver {
     private static void setVegetationDownRight(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
         Tile.Vegetation vegetation = null;
         Point point = null;
+        Tile tile = null;
 
         try {
 
@@ -382,6 +377,13 @@ public class SettlersModelDriver {
                     arguments.getIntFor3Chars(),
                     arguments.getIntFor3Chars()
             );
+
+            tile = map.getTerrain().getTileDownRight(point);
+
+            if (tile == null) {
+                throw new SettlersModelDriverException();
+            }
+
         } catch (Throwable t) {
             System.out.println("SET VEGETATION DOWN RIGHT - FAILED");
 
@@ -392,12 +394,13 @@ public class SettlersModelDriver {
         System.out.println(" - Point: " + point);
         System.out.println(" - Vegetation: " + vegetation);
 
-        map.getTerrain().getTileDownRight(point).setVegetationType(vegetation);
+        tile.setVegetationType(vegetation);
 
     }
 
     private static void setVegetationBelow(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
         Tile.Vegetation vegetation = null;
+        Tile tile = null;
         Point point = null;
 
         try {
@@ -413,6 +416,13 @@ public class SettlersModelDriver {
                     arguments.getIntFor3Chars(),
                     arguments.getIntFor3Chars()
             );
+
+            tile = map.getTerrain().getTileBelow(point);
+
+            if (tile == null) {
+                throw new SettlersModelDriverException();
+            }
+
         } catch (Throwable t) {
             System.out.println("SET VEGETATION BELOW - FAILED");
 
@@ -423,7 +433,7 @@ public class SettlersModelDriver {
         System.out.println(" - Point: " + point);
         System.out.println(" - Vegetation: " + vegetation);
 
-        map.getTerrain().getTileBelow(point).setVegetationType(vegetation);
+        tile.setVegetationType(vegetation);
     }
 
     /**
@@ -488,6 +498,8 @@ public class SettlersModelDriver {
         System.out.println(" - Building: " + building);
         System.out.println(" - Point: " + point);
 
+        testCaseGenerator.recordPlaceBuilding(building, point);
+
         map.placeBuilding(building, point);
     }
 
@@ -540,6 +552,8 @@ public class SettlersModelDriver {
         System.out.println("FAST FORWARD");
         System.out.println(" - Iterations: " + iterations);
 
+        testCaseGenerator.recordFastForward(iterations, map);
+
         for (int i = 0; i < iterations; i++) {
 
             map.stepTime();
@@ -565,6 +579,8 @@ public class SettlersModelDriver {
 
         System.out.println("DELETE FLAG AT POINT");
         System.out.println(" - Flag: " + flag);
+
+        testCaseGenerator.recordRemoveFlag(flag);
 
         map.removeFlag(flag);
     }
@@ -598,6 +614,8 @@ public class SettlersModelDriver {
 
         System.out.println("RAISE FLAG");
         System.out.println(" - Point: " + point);
+
+        testCaseGenerator.recordPlaceFlag(player, point);
 
         map.placeFlag(player, point);
     }
@@ -674,6 +692,8 @@ public class SettlersModelDriver {
         System.out.println(" - Start: " + start);
         System.out.println(" - End: " + end);
         System.out.println(" - Player: " + player);
+
+        testCaseGenerator.recordPlaceRoadAutomatically(player, start, end);
 
         map.placeAutoSelectedRoad(player, start, end);
     }

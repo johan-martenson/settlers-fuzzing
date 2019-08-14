@@ -1,2 +1,180 @@
  - Trying to tear down an already burning house - tries to remove driveway that's already gone - NPE - FIXED
  - Place road 0, 0 to 0, 0 - non-existing MapPoint
+ - Send out scout, then remove road between headquarter and the flag. When the scout gets back to the flag he/she gets null as getClosestStorage and tries to go there with setTarget
+
+
+Courier arrives somehow wrong
+=============================
+
+sync/fuzzer02/crashes/id:000041,sig:06,src:000727,op:havoc,rep:2
+
+Exception in thread "main" org.appland.settlers.model.InvalidRouteException: No way on existing roads from (430, 200) to (432, 200)
+        at org.appland.settlers.model.Worker.setTarget(Worker.java:417)
+        at org.appland.settlers.model.Worker.setTarget(Worker.java:395)
+        at org.appland.settlers.model.Courier.onArrival(Courier.java:213)
+        at org.appland.settlers.model.Worker.handleArrival(Worker.java:251)
+        at org.appland.settlers.model.Worker.stepTime(Worker.java:162)
+        at org.appland.settlers.model.GameMap.stepTime(GameMap.java:284)
+        at org.appland.settlers.fuzzing.SettlersModelDriver.fastForward(SettlersModelDriver.java:545)
+        at org.appland.settlers.fuzzing.SettlersModelDriver.main(SettlersModelDriver.java:143)
+
+RAISE BUILDING
+ - Building: Headquarter
+ - Point: (429, 201)
+RAISE FLAG
+ - Point: (434, 200)
+CALL SCOUT
+ - Flag: Flag at (434, 200)
+CALL GEOLOGIST
+ - Flag: Flag at (434, 200)
+PLACE ROAD AUTOMATICALLY
+ - Start: (430, 200)
+ - End: (434, 200)
+ - Player: Player 0
+DELETE FLAG AT POINT - FAILED
+RAISE BUILDING
+ - Building: Woodcutter
+ - Point: (433, 201)
+FAST FORWARD
+ - Iterations: 43
+DELETE FLAG AT POINT - FAILED
+DELETE FLAG AT POINT - FAILED
+RAISE FLAG
+ - Point: (200, 434)
+java.lang.Exception: Can't place Flag at (200, 434) on occupied point
+DELETE ROAD AT POINT - FAILED
+RAISE BUILDING
+ - Building: Woodcutter
+ - Point: (433, 201)
+org.appland.settlers.model.InvalidUserActionException: Cannot place SMALL building, only null.
+FAST FORWARD
+ - Iterations: 10
+RAISE FLAG - FAILED
+DELETE FLAG AT POINT
+ - Flag: Flag at (434, 200)
+PLACE ROAD AUTOMATICALLY
+ - Start: (430, 200)
+ - End: (434, 200)
+ - Player: Player 0
+org.appland.settlers.model.InvalidEndPointException: Invalid endpoint: (434, 200)
+RAISE BUILDING
+ - Building: Woodcutter at Flag at null with nothing in queue and
+ - Point: (433, 201)
+org.appland.settlers.model.InvalidUserActionException: Cannot place SMALL building, only null.
+FAST FORWARD
+ - Iterations: 10
+RAISE FLAG - FAILED
+DELETE FLAG AT POINT - FAILED
+FAST FORWARD
+ - Iterations: 20
+
+
+Transport priority index out of bounds
+======================================
+
+sync/fuzzer02/crashes/id:000002,sig:06,src:000000+000127,op:splice,rep:16
+
+Exception in thread "main" java.lang.IndexOutOfBoundsException: Index: 74, Size: 46
+        at java.base/java.util.LinkedList.checkPositionIndex(LinkedList.java:564)
+        at java.base/java.util.LinkedList.add(LinkedList.java:511)
+        at org.appland.settlers.model.Player.setTransportPriority(Player.java:344)
+        at org.appland.settlers.fuzzing.SettlersModelDriver.changeTransportationPriority(SettlersModelDriver.java:276
+)
+        at org.appland.settlers.fuzzing.SettlersModelDriver.main(SettlersModelDriver.java:170)
+
+CHANGE TRANSPORTATION PRIORITY
+ - Priority: 74
+ - Material: SHIELD
+
+
+Scout returns when road is missing
+==================================
+
+sync/fuzzer01/crashes/id:000026,sig:06,src:000102,op:flip1,pos:92
+
+Exception in thread "main" java.lang.NullPointerException
+        at org.appland.settlers.model.Scout.onArrival(Scout.java:98)
+        at org.appland.settlers.model.Worker.handleArrival(Worker.java:251)
+        at org.appland.settlers.model.Worker.stepTime(Worker.java:162)
+        at org.appland.settlers.model.GameMap.stepTime(GameMap.java:284)
+        at org.appland.settlers.fuzzing.SettlersModelDriver.fastForward(SettlersModelDriver.java:545)
+        at org.appland.settlers.fuzzing.SettlersModelDriver.main(SettlersModelDriver.java:143)
+
+RAISE BUILDING
+ - Building: Headquarter
+ - Point: (429, 201)
+RAISE FLAG
+ - Point: (434, 200)
+CALL SCOUT
+ - Flag: Flag at (434, 200)
+CALL GEOLOGIST
+ - Flag: Flag at (434, 200)
+PLACE ROAD AUTOMATICALLY
+ - Start: (430, 200)
+ - End: (434, 200)
+ - Player: Player 0
+RAISE BUILDING
+ - Building: Woodcutter at Flag at null with nothing in queue and
+ - Point: (433, 201)
+RAISE FLAG
+ - Point: (450, 210)
+java.lang.Exception: Can't place Flag at (450, 210) on occupied point
+DELETE FLAG AT POINT - FAILED
+FAST FORWARD
+ - Iterations: 20
+DELETE ROAD AT POINT
+ - Road: Road Flag at (430, 200) to Flag at (434, 200) with courier
+STOP PRODUCTION
+ - Building: Woodcutter at Flag at (434, 200) with nothing in queue and
+START PRODUCTION
+ - Building: Woodcutter at Flag at (434, 200) with nothing in queue and
+FAST FORWARD
+ - Iterations: 433
+
+
+Place building on illegal point
+===============================
+
+sync/fuzzer01/crashes/id:000010,sig:06,src:000014,op:havoc,rep:16
+
+Exception in thread "main" java.lang.NullPointerException
+        at org.appland.settlers.model.GameMap.getBuildingAtPoint(GameMap.java:1545)
+        at org.appland.settlers.model.GameMap.isBuildingAtPoint(GameMap.java:1555)
+        at org.appland.settlers.model.GameMap.isAvailableHousePoint(GameMap.java:2144)
+        at org.appland.settlers.model.GameMap.placeBuilding(GameMap.java:426)
+        at org.appland.settlers.fuzzing.SettlersModelDriver.raiseBuilding(SettlersModelDriver.java:491)
+        at org.appland.settlers.fuzzing.SettlersModelDriver.main(SettlersModelDriver.java:146)
+
+RAISE BUILDING
+ - Building: Headquarter
+ - Point: (0, 104)
+
+
+Place automatic road
+====================
+
+sync/fuzzer01/crashes/id:000007,sig:06,src:000000,op:havoc,rep:2
+
+Exception in thread "main" java.lang.NullPointerException
+        at org.appland.settlers.model.GameMap.isFlagAtPoint(GameMap.java:1355)
+        at org.appland.settlers.model.GameMap.placeRoad(GameMap.java:745)
+        at org.appland.settlers.model.GameMap.placeAutoSelectedRoad(GameMap.java:834)
+        at org.appland.settlers.fuzzing.SettlersModelDriver.buildRoadAutomatic(SettlersModelDriver.java:678)
+        at org.appland.settlers.fuzzing.SettlersModelDriver.main(SettlersModelDriver.java:116)
+
+RAISE BUILDING
+ - Building: Headquarter with inventory {PRIVATE=51, SAWMILL_WORKER=2, GENERAL=0, IRON=0, STONE=68, MINER=2, DONKEY=8
+, STONEMASON=2, GEOLOGIST=1, IRON_FOUNDER=4, WOOD=24, PLANK=44, MEAT=6, COAL=16, BREWER=1, COIN=0, BAKER=2, BREAD=8,
+STORAGE_WORKER=1, BUTCHER=2, BEER=0, PIG_BREEDER=1, FARMER=8, HUNTER=2, WHEAT=0, FORESTER=4, SWORD=0, ARMORER=1, SCOU
+T=1, PIG=0, DONKEY_BREEDER=1, WOODCUTTER_WORKER=6, MILLER=1, SHIELD=0, WATER=0, GOLD=0, FISH=4, IRON_BAR=16, SERGEANT
+=0, MINTER=1, WELL_WORKER=1, FISHERMAN=6}
+ - Point: (429, 201)
+RAISE FLAG
+ - Point: (434, 200)
+CALL SCOUT
+ - Flag: Flag at (434, 200)
+CALL GEOLOGIST - FAILED
+PLACE ROAD AUTOMATICALLY
+ - Start: (0, 0)
+ - End: (0, 0)
+ - Player: Player 0
