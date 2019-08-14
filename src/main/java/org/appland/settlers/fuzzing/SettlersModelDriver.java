@@ -637,6 +637,11 @@ public class SettlersModelDriver {
             );
 
             road = map.getRoadAtPoint(point);
+
+            if (road == null) {
+                throw new SettlersModelDriverException();
+            }
+
         } catch (Throwable t) {
             System.out.println("DELETE ROAD AT POINT - FAILED");
 
