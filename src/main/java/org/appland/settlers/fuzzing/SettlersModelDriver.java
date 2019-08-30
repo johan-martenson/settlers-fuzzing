@@ -85,10 +85,13 @@ public class SettlersModelDriver {
 
         /* Create game map */
         List<Player> players = new ArrayList<>();
-        players.add(new Player("Player 0", Color.BLUE));
 
         MapLoader mapLoader = new MapLoader();
         MapFile mapFile = mapLoader.loadMapFromFile(MAP_FILENAME);
+
+        for (int i = 0; i < mapFile.getStartingPoints().size(); i++) {
+            players.add(new Player("Player " + i, Color.BLUE));
+        }
 
         GameMap map = mapLoader.convertMapFileToGameMap(mapFile);
 
@@ -165,6 +168,38 @@ public class SettlersModelDriver {
                     case "G": // CHANGE_FOOD_ALLOCATION
                         changeFoodAllocation(map, arguments);
                         break;
+                    case "H": // ATTACK
+                        attack(map, arguments);
+                        break;
+                    case "I": // GET AVAILABLE BUILDINGS
+                        getAvailableBuildings(map, arguments);
+                        break;
+                    case "J": // PLACE MANUAL ROAD
+                        try {
+                            placeManualRoad(map, arguments);
+                        } catch (InvalidEndPointException e) {}
+                        break;
+                    case "K": // GET POSSIBLE ADJACENT ROAD POINTS
+                        getPossibleAdjacentRoadPoints(map, arguments);
+                        break;
+                    case "L": // GET AVAILABLE FLAGS
+                        getAvailableFlags(map, arguments);
+                        break;
+                    case "M": // GET AVAILABLE MINES
+                        getAvailableMines(map, arguments);
+                        break;
+                    case "N": // EVACUATE BUILDING
+                        evacuateBuilding(map, arguments);
+                        break;
+                    case "O": // CANCEL EVACUATION
+                        cancelEvacuation(map, arguments);
+                        break;
+                    case "P": // STOP RECEIVING COINS
+                        stopReceivingCoins(map, arguments);
+                        break;
+                    case "Q": // START RECEIVING COINS
+                        startReceivingCoins(map, arguments);
+                        break;
                     default:
                         System.out.println("CAN'T HANDLE: '" + command + "'");
                         return;
@@ -175,6 +210,176 @@ public class SettlersModelDriver {
                 System.out.println(e);
             }
         }
+    }
+
+    private static void startReceivingCoins(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
+        Building building = null;
+
+        try {
+            Point point = arguments.getPointForChars();
+
+            building = map.getBuildingAtPoint(point);
+
+            if (building == null) {
+                throw new SettlersModelDriverException();
+            }
+        } catch (Throwable t) {
+            throw new SettlersModelDriverException();
+        }
+
+        building.enablePromotions();
+    }
+
+    private static void stopReceivingCoins(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
+        Building building = null;
+
+        try {
+            Point point = arguments.getPointForChars();
+
+            building = map.getBuildingAtPoint(point);
+
+            if (building == null) {
+                throw new SettlersModelDriverException();
+            }
+        } catch (Throwable t) {
+            throw new SettlersModelDriverException();
+        }
+
+        building.disablePromotions();
+    }
+
+    private static void cancelEvacuation(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
+        Building building = null;
+
+        try {
+            Point point = arguments.getPointForChars();
+
+            building = map.getBuildingAtPoint(point);
+
+            if (building == null) {
+                throw new SettlersModelDriverException();
+            }
+        } catch (Throwable t) {
+            throw new SettlersModelDriverException();
+        }
+
+        building.cancelEvacuation();
+    }
+
+    private static void evacuateBuilding(GameMap map, ArgumentsHandler arguments) throws Exception {
+        Building building = null;
+
+        try {
+            Point point = arguments.getPointForChars();
+
+            building = map.getBuildingAtPoint(point);
+
+            if (building == null) {
+                throw new SettlersModelDriverException();
+            }
+        } catch (Throwable t) {
+            throw new SettlersModelDriverException();
+        }
+
+        building.evacuate();
+    }
+
+    private static void getAvailableMines(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
+        Player player = null;
+
+        try {
+            player = map.getPlayers().get(arguments.getIntFor1Chars());
+        } catch (Throwable t) {
+            throw new SettlersModelDriverException();
+        }
+
+        map.getAvailableMinePoints(player);
+    }
+
+    private static void getAvailableFlags(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
+        Player player = null;
+
+        try {
+            player = map.getPlayers().get(arguments.getIntFor1Chars());
+        } catch (Throwable t) {
+            throw new SettlersModelDriverException();
+        }
+
+        map.getAvailableFlagPoints(player);
+    }
+
+    private static void getPossibleAdjacentRoadPoints(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
+        Player player = null;
+        Point point = null;
+
+        try {
+            player = map.getPlayers().get(arguments.getIntFor1Chars());
+
+            point = arguments.getPointForChars();
+        } catch (Throwable t) {
+            throw new SettlersModelDriverException();
+        }
+
+        map.getPossibleAdjacentRoadConnectionsIncludingEndpoints(player, point);
+    }
+
+    private static void placeManualRoad(GameMap map, ArgumentsHandler arguments) throws Exception {
+        Player player = null;
+        List<Point> points = new ArrayList<>();
+
+        try {
+            player = map.getPlayers().get(arguments.getIntFor1Chars());
+
+            int numberOfPoints = arguments.getIntFor2Chars();
+
+            for (int i = 0; i < numberOfPoints; i++) {
+                points.add(
+                    arguments.getPointForChars()
+                );
+            }
+
+        } catch (Throwable t) {
+            throw new SettlersModelDriverException();
+        }
+
+
+        map.placeRoad(player, points);
+    }
+
+    private static void getAvailableBuildings(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
+        Player player = null;
+
+        try {
+            player = map.getPlayers().get(arguments.getIntFor1Chars());
+
+            if (player == null) {
+                throw new SettlersModelDriverException();
+            }
+        } catch (Throwable t) {
+            throw new SettlersModelDriverException();
+        }
+
+        map.getAvailableHousePoints(player);
+    }
+
+    private static void attack(GameMap map, ArgumentsHandler arguments) throws Exception {
+        Player attacker = null;
+        Building building = null;
+        int attackers = 0;
+
+        try {
+            attacker = map.getPlayers().get(arguments.getIntFor1Chars());
+
+            building = map.getBuildingAtPoint(arguments.getPointForChars());
+
+            if (building == null) {
+                throw new SettlersModelDriverException();
+            }
+        } catch (Throwable t) {
+            throw new SettlersModelDriverException();
+        }
+
+        attacker.attack(building, attackers);
     }
 
     private static void changeFoodAllocation(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
@@ -238,7 +443,7 @@ public class SettlersModelDriver {
         player.setCoalQuota(buildingClass, quota);
     }
 
-    private static void changeTransportationPriority(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
+    private static void changeTransportationPriority(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException, InvalidUserActionException {
         Player player = null;
         int priority = 0;
         Material material = null;
