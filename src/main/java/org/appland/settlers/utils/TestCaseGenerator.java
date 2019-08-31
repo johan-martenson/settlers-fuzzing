@@ -3,8 +3,11 @@ package org.appland.settlers.utils;
 import org.appland.settlers.model.Building;
 import org.appland.settlers.model.Flag;
 import org.appland.settlers.model.GameMap;
+import org.appland.settlers.model.Material;
 import org.appland.settlers.model.Player;
 import org.appland.settlers.model.Point;
+
+import java.util.List;
 
 public class TestCaseGenerator {
     public void recordPlaceBuilding(Building building, Point point) {
@@ -101,5 +104,156 @@ public class TestCaseGenerator {
 
     private void printStartTry() {
         System.out.println("try {");
+    }
+
+    public void recordEnablePromotions(Building building) {
+        printStartTry();
+
+        System.out.println(
+                "map.getBuildingAtPoint(" +
+                        printPoint(building.getPosition()) +
+                ").enablePromotions();"
+        );
+
+        printEndTry();
+    }
+
+    public void recordDisablePromotions(Building building) {
+        printStartTry();
+
+        System.out.println(
+                "map.getBuildingAtPoint(" +
+                        printPoint(building.getPosition()) +
+                        ").disablePromotions();"
+        );
+
+        printEndTry();
+    }
+
+    public void recordCancelEvacuation(Building building) {
+        printStartTry();
+
+        System.out.println(
+                "map.getBuildingAtPoint(" +
+                        printPoint(building.getPosition()) +
+                        ").cancelEvacuation();"
+        );
+
+        printEndTry();
+
+    }
+
+    public void recordEvacuate(Building building) {
+        printStartTry();
+
+        System.out.println(
+                "map.getBuildingAtPoint(" +
+                        printPoint(building.getPosition()) +
+                        ").evacuate();"
+        );
+
+        printEndTry();
+
+    }
+
+    public void recordGetAvailableMines(Player player) {
+        printStartTry();
+
+        System.out.println(
+                "map.getAvailableMines(" + player.getName() + ");"
+        );
+
+        printEndTry();
+    }
+
+    public void recordGetAvailableFlags(Player player) {
+        printStartTry();
+
+        System.out.println(
+                "map.getAvailableFlags(" + player.getName() + ");"
+        );
+
+        printEndTry();
+    }
+
+    public void recordGetPossibleAdjacentRoadPoints(Point point, Player player) {
+        printStartTry();
+
+        System.out.println(
+                "map.getPossibleAdjacentRoadPoints(" + player.getName() + ", " + printPoint(point) + ");"
+        );
+
+        printEndTry();
+    }
+
+    public void recordPlaceRoad(Player player, List<Point> points) {
+        printStartTry();
+
+        System.out.print("map.placeRoad(" + player.getName() + ", ");
+
+        boolean first = true;
+
+        for (Point point : points) {
+            if (!first) {
+                System.out.print(", " + printPoint(point));
+            } else {
+                System.out.print(printPoint(point));
+            }
+        }
+
+        System.out.println(");");
+
+        printEndTry();
+    }
+
+    public void recordGetAvailableHousePoints(Player player) {
+        printStartTry();
+
+        System.out.println(
+                "map.getAvailableHousePoints(" + player.getName() + ");"
+        );
+
+        printEndTry();
+    }
+
+    public void recordAttack(Player attacker, Building building, int attackers) {
+        printStartTry();
+
+        System.out.println(
+                attacker.getName() + ".attack(map.getBuildingAtPoint(" + printPoint(building.getPosition()) + "), " + attackers + ");"
+        );
+
+        printEndTry();
+
+    }
+
+    public void recordSetFoodQuota(Player player, Class<? extends Building> buildingClass, int quota) {
+        printStartTry();
+
+        System.out.println(
+                player.getName() + ".setFoodQuota(" + buildingClass.getSimpleName() + ", " + quota + ");"
+        );
+
+        printEndTry();
+    }
+
+    public void recordSetCoalQuota(Player player, Class<? extends Building> buildingClass, int quota) {
+        printStartTry();
+
+        System.out.println(
+                player.getName() + ".setCoalQuota(" + buildingClass.getSimpleName() + ", " + quota + ");"
+        );
+
+        printEndTry();
+    }
+
+    public void recordSetTransportPriority(Player player, int priority, Material material) {
+        printStartTry();
+
+        System.out.println(
+                player.getName() + ".setTransportPriority(" + priority + ", " + material.name() + ");"
+        );
+
+        printEndTry();
     }
 }

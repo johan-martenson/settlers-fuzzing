@@ -2,6 +2,7 @@ package org.appland.settlers.fuzzing;
 
 import org.appland.settlers.maps.MapFile;
 import org.appland.settlers.maps.MapLoader;
+import org.appland.settlers.maps.SettlersMapLoadingException;
 import org.appland.settlers.model.*;
 import org.appland.settlers.utils.TestCaseGenerator;
 
@@ -227,6 +228,8 @@ public class SettlersModelDriver {
             throw new SettlersModelDriverException();
         }
 
+        testCaseGenerator.recordEnablePromotions(building);
+
         building.enablePromotions();
     }
 
@@ -244,6 +247,8 @@ public class SettlersModelDriver {
         } catch (Throwable t) {
             throw new SettlersModelDriverException();
         }
+
+        testCaseGenerator.recordDisablePromotions(building);
 
         building.disablePromotions();
     }
@@ -263,6 +268,8 @@ public class SettlersModelDriver {
             throw new SettlersModelDriverException();
         }
 
+        testCaseGenerator.recordCancelEvacuation(building);
+
         building.cancelEvacuation();
     }
 
@@ -281,6 +288,8 @@ public class SettlersModelDriver {
             throw new SettlersModelDriverException();
         }
 
+        testCaseGenerator.recordEvacuate(building);
+
         building.evacuate();
     }
 
@@ -293,6 +302,8 @@ public class SettlersModelDriver {
             throw new SettlersModelDriverException();
         }
 
+        testCaseGenerator.recordGetAvailableMines(player);
+
         map.getAvailableMinePoints(player);
     }
 
@@ -304,6 +315,8 @@ public class SettlersModelDriver {
         } catch (Throwable t) {
             throw new SettlersModelDriverException();
         }
+
+        testCaseGenerator.recordGetAvailableFlags(player);
 
         map.getAvailableFlagPoints(player);
     }
@@ -319,6 +332,8 @@ public class SettlersModelDriver {
         } catch (Throwable t) {
             throw new SettlersModelDriverException();
         }
+
+        testCaseGenerator.recordGetPossibleAdjacentRoadPoints(point, player);
 
         map.getPossibleAdjacentRoadConnectionsIncludingEndpoints(player, point);
     }
@@ -342,6 +357,7 @@ public class SettlersModelDriver {
             throw new SettlersModelDriverException();
         }
 
+        testCaseGenerator.recordPlaceRoad(player, points);
 
         map.placeRoad(player, points);
     }
@@ -358,6 +374,8 @@ public class SettlersModelDriver {
         } catch (Throwable t) {
             throw new SettlersModelDriverException();
         }
+
+        testCaseGenerator.recordGetAvailableHousePoints(player);
 
         map.getAvailableHousePoints(player);
     }
@@ -378,6 +396,8 @@ public class SettlersModelDriver {
         } catch (Throwable t) {
             throw new SettlersModelDriverException();
         }
+
+        testCaseGenerator.recordAttack(attacker, building, attackers);
 
         attacker.attack(building, attackers);
     }
@@ -415,6 +435,8 @@ public class SettlersModelDriver {
         System.out.println(" - Building: " + buildingClass);
         System.out.println(" - Quota: " + quota);
 
+        testCaseGenerator.recordSetFoodQuota(player, buildingClass, quota);
+
         player.setFoodQuota(buildingClass, quota);
     }
 
@@ -439,6 +461,8 @@ public class SettlersModelDriver {
         System.out.println("CHANGE COAL ALLOCATION");
         System.out.println(" - Building: " + buildingClass);
         System.out.println(" - Quota: "  + quota);
+
+        testCaseGenerator.recordSetCoalQuota(player, buildingClass, quota);
 
         player.setCoalQuota(buildingClass, quota);
     }
@@ -467,6 +491,8 @@ public class SettlersModelDriver {
         System.out.println("CHANGE TRANSPORTATION PRIORITY");
         System.out.println(" - Priority: " + priority);
         System.out.println(" - Material: " + material);
+
+        testCaseGenerator.recordSetTransportPriority(player, priority, material);
 
         player.setTransportPriority(priority, material);
     }
