@@ -1,1 +1,6 @@
-afl-fuzz -i in_dir/ -o sync -S fuzzer02 -t 60000 /home/johan/tools/kelinci/fuzzerside/interface -p 7008 @@
+for port in {7009..7010}; do
+
+    afl-fuzz -i in_dir/ -o sync -S fuzzer$port -t 60000 /home/johan/tools/kelinci/fuzzerside/interface -p $port @@ &
+
+done
+

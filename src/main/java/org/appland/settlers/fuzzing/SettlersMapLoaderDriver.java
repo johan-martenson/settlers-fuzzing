@@ -1,5 +1,6 @@
 package org.appland.settlers.fuzzing;
 
+import org.appland.settlers.maps.InvalidMapException;
 import org.appland.settlers.maps.MapFile;
 import org.appland.settlers.maps.MapLoader;
 import org.appland.settlers.maps.SettlersMapLoadingException;
@@ -27,6 +28,8 @@ public class SettlersMapLoaderDriver {
 
             map.stepTime();
         } catch (SettlersMapLoadingException e) {
+            e.printStackTrace();
+        } catch (InvalidMapException e) {
             e.printStackTrace();
         }
     }

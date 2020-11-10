@@ -1,13 +1,53 @@
 package org.appland.settlers.fuzzing;
 
+import org.appland.settlers.maps.InvalidMapException;
 import org.appland.settlers.maps.MapFile;
 import org.appland.settlers.maps.MapLoader;
-import org.appland.settlers.maps.SettlersMapLoadingException;
-import org.appland.settlers.model.*;
+import org.appland.settlers.model.Armory;
+import org.appland.settlers.model.Bakery;
+import org.appland.settlers.model.Barracks;
+import org.appland.settlers.model.Brewery;
+import org.appland.settlers.model.Building;
+import org.appland.settlers.model.Catapult;
+import org.appland.settlers.model.CoalMine;
+import org.appland.settlers.model.DonkeyFarm;
+import org.appland.settlers.model.Farm;
+import org.appland.settlers.model.Fishery;
+import org.appland.settlers.model.Flag;
+import org.appland.settlers.model.ForesterHut;
+import org.appland.settlers.model.Fortress;
+import org.appland.settlers.model.GameMap;
+import org.appland.settlers.model.GoldMine;
+import org.appland.settlers.model.GraniteMine;
+import org.appland.settlers.model.GuardHouse;
+import org.appland.settlers.model.Headquarter;
+import org.appland.settlers.model.HunterHut;
+import org.appland.settlers.model.InvalidEndPointException;
+import org.appland.settlers.model.InvalidRouteException;
+import org.appland.settlers.model.InvalidUserActionException;
+import org.appland.settlers.model.IronMine;
+import org.appland.settlers.model.Material;
+import org.appland.settlers.model.Mill;
+import org.appland.settlers.model.Mint;
+import org.appland.settlers.model.PigFarm;
+import org.appland.settlers.model.Player;
+import org.appland.settlers.model.Point;
+import org.appland.settlers.model.Quarry;
+import org.appland.settlers.model.Road;
+import org.appland.settlers.model.Sawmill;
+import org.appland.settlers.model.SlaughterHouse;
+import org.appland.settlers.model.Storehouse;
+import org.appland.settlers.model.TransportCategory;
+import org.appland.settlers.model.Vegetation;
+import org.appland.settlers.model.WatchTower;
+import org.appland.settlers.model.Well;
+import org.appland.settlers.model.Woodcutter;
 import org.appland.settlers.utils.TestCaseGenerator;
 
 import java.awt.Color;
-import java.io.*;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -22,13 +62,23 @@ import java.util.Map;
 public class SettlersModelDriver {
 
     private static final String MAP_FILENAME = "/home/johan/projects/settlers-map-manager/maps/WORLDS/WELT01.SWD";
-    //private static final String MAP_FILENAME = "/home/johan/projects/settlers-map-manager/maps/WORLDS/WELT02.SWD";
+    private static final MapLoader mapLoader = new MapLoader();
+    private static MapFile mapFile = null;
+
+    static {
+        try {
+            mapFile = mapLoader.loadMapFromFile(MAP_FILENAME);
+        } catch (Exception | InvalidMapException e) {
+            e.printStackTrace();
+        }
+    }
 
     private static final Map<Integer, Class<? extends Building>> buildingClassMap = new HashMap<>();
-    private static final Map<Integer, Tile.Vegetation> vegetationMap = new HashMap<>();
+    private static final Map<Integer, Vegetation> vegetationMap = new HashMap<>();
     private static final TestCaseGenerator testCaseGenerator = new TestCaseGenerator();
+    private static final int NUMBER_COMMANDS = 43;
 
-    public static void main( String[] args ) throws Exception {
+    public static void main(String[] args) throws Exception {
 
         final String filename = args[0];
 
@@ -36,7 +86,6 @@ public class SettlersModelDriver {
 
         File file = new File(filename);
 
-        //BufferedReader br = new BufferedReader(new FileReader(file));
         FileInputStream inputStream = new FileInputStream(file);
 
         /* Set up the building class map */
@@ -63,32 +112,26 @@ public class SettlersModelDriver {
         buildingClassMap.put(20, Quarry.class);
         buildingClassMap.put(21, Sawmill.class);
         buildingClassMap.put(22, SlaughterHouse.class);
-        buildingClassMap.put(23, Storage.class);
+        buildingClassMap.put(23, Storehouse.class);
         buildingClassMap.put(24, WatchTower.class);
         buildingClassMap.put(25, Well.class);
         buildingClassMap.put(26, Woodcutter.class);
 
         /* Set up the vegetation map */
-        vegetationMap.put(1, Tile.Vegetation.WATER);
-        vegetationMap.put(2, Tile.Vegetation.GRASS);
-        vegetationMap.put(3, Tile.Vegetation.SWAMP);
-        vegetationMap.put(4, Tile.Vegetation.MOUNTAIN);
-        vegetationMap.put(5, Tile.Vegetation.SAVANNAH);
-        vegetationMap.put(6, Tile.Vegetation.SNOW);
-        vegetationMap.put(7, Tile.Vegetation.DESERT);
-        vegetationMap.put(8, Tile.Vegetation.DEEP_WATER);
-        vegetationMap.put(9, Tile.Vegetation.SHALLOW_WATER);
-        vegetationMap.put(10, Tile.Vegetation.STEPPE);
-        vegetationMap.put(11, Tile.Vegetation.LAVA);
-        vegetationMap.put(12, Tile.Vegetation.MAGENTA);
-        vegetationMap.put(13, Tile.Vegetation.MOUNTAIN_MEADOW);
-        vegetationMap.put(14, Tile.Vegetation.BUILDABLE_MOUNTAIN);
+        for (int i = 0; i < Vegetation.values().length; i++) {
+            vegetationMap.put(i, Vegetation.values()[i]);
+        }
 
         /* Create game map */
         List<Player> players = new ArrayList<>();
 
-        MapLoader mapLoader = new MapLoader();
-        MapFile mapFile = mapLoader.loadMapFromFile(MAP_FILENAME);
+        //MapLoader mapLoader = new MapLoader();
+        //MapFile mapFile = null;
+        //try {
+            //mapFile = mapLoader.loadMapFromFile(MAP_FILENAME);
+        //} catch (InvalidMapException e) {
+            //e.printStackTrace();
+        //}
 
         for (int i = 0; i < mapFile.getStartingPoints().size(); i++) {
             players.add(new Player("Player " + i, Color.BLUE));
@@ -98,123 +141,455 @@ public class SettlersModelDriver {
 
         map.setPlayers(players);
 
-        /* Adjust the amount of wild animals */
-        List<WildAnimal> wildAnimals = map.getWildAnimals();
-        if (wildAnimals.size() > 10) {
-            while (wildAnimals.size() > 10) {
-                wildAnimals.remove(10);
-            }
+        /* Start monitoring for each player */
+        for (Player player : players) {
+            player.monitorGameView((player1, gameChangesList) -> {
+
+            });
         }
 
         /* Execute the commands from the input file */
-        String st;
-
         ArgumentsHandler arguments = new ArgumentsHandler(inputStream);
 
         while (true) {
 
-            String command = arguments.getChar();
-
             try {
-                switch (command) {
-                    case "1": // BUILD_ROAD_AUTO PLAYER_ID START.X START.Y END.X END.Y
+                int commandIndex = Math.abs(arguments.getUnsignedIntFor1Chars() % NUMBER_COMMANDS);
+
+                switch (commandIndex) {
+                    case 0: // BUILD_ROAD_AUTO PLAYER_ID START.X START.Y END.X END.Y
                         try {
                             buildRoadAutomatic(map, arguments);
                         } catch (InvalidEndPointException e) {
                             System.out.println(e);
                         }
                         break;
-                    case "2": // DELETE_ROAD POINT.X POINT.Y
+                    case 1: // DELETE_ROAD POINT.X POINT.Y
                         deleteRoadAtPoint(map, arguments);
                         break;
-                    case "3": // RAISE_FLAG PLAYER_ID POINT.X POINT.Y
+                    case 2: // DELETE ROAD BY INDEX
+                        deleteRoadByIndex(map, arguments);
+                        break;
+                    case 3: // RAISE_FLAG PLAYER_ID POINT.X POINT.Y
                         raiseFlag(map, arguments);
                         break;
-                    case "4": //""DELETE_FLAG":
+                    case 4: // DELETE_FLAG
                         deleteFlagAtPoint(map, arguments);
                         break;
-                    case "5": //""FAST_FORWARD":
+                    case 5: // DELETE FLAG BY INDEX
+                        deleteFlagByIndex(map, arguments);
+                        break;
+                    case 6: // FAST_FORWARD
                         fastForward(map, arguments);
                         break;
-                    case "6": // RAISE_BUILDING PLAYER_ID TYPE POINT.X POINT.Y
+                    case 7: // RAISE_BUILDING PLAYER_ID TYPE POINT.X POINT.Y
                         raiseBuilding(map, arguments);
                         break;
-                    case "7": // DELETE_BUILDING_AT_POINT POINT.X POINT.Y
+                    case 8: // DELETE_BUILDING_AT_POINT POINT.X POINT.Y
                         deleteBuilding(map, arguments);
                         break;
-                    case "8": // SET_VEGETATION_BELOW TYPE POINT.X POINT.Y
+                    case 9: // DELETE BUILDING BY INDEX
+                        tearDownBuildingByIndex(map, arguments);
+                        break;
+                    case 10: // SET_VEGETATION_BELOW TYPE POINT.X POINT.Y
                         setVegetationBelow(map, arguments);
                         break;
-                    case "9": // SET_VEGETATION_DOWN_RIGHT TYPE POINT.X POINT.Y
+                    case 11: // SET_VEGETATION_DOWN_RIGHT TYPE POINT.X POINT.Y
                         setVegetationDownRight(map, arguments);
                         break;
-                    case "A": // START_PRODUCTION HOUSE_INDEX
-                        startProduction(map, arguments);
+                    case 12: // START_PRODUCTION IN HOUSE BY INDEX
+                        startProductionInHouseByIndex(map, arguments);
                         break;
-                    case "B": // STOP_PRODUCTION HOUSE_INDEX
+                    case 13: // STOP_PRODUCTION HOUSE_INDEX
                         stopProduction(map, arguments);
                         break;
-                    case "C": // CALL_SCOUT POINT.X POINT.Y
+                    case 14: // CALL_SCOUT POINT.X POINT.Y
                         callScout(map, arguments);
                         break;
-                    case "D": // CALL_GEOLOGIST POINT.X POINT.Y
+                    case 15: // CALL SCOUT IN FLAG BY INDEX
+                        callScoutAtFlagByIndex(map, arguments);
+                        break;
+                    case 16: // CALL_GEOLOGIST POINT.X POINT.Y
                         callGeologist(map, arguments);
                         break;
-                    case "E": // CHANGE_TRANSPORTATION_PRIORITY
+                    case 17: // CALL GEOLOGIST AT FLAG BY INDEX
+                        callGeologistAtFlagByIndex(map, arguments);
+                        break;
+                    case 18: // CHANGE_TRANSPORTATION_PRIORITY
                         changeTransportationPriority(map, arguments);
                         break;
-                    case "F": // CHANGE_COAL_ALLOCATION
+                    case 19: // CHANGE_COAL_ALLOCATION
                         changeCoalAllocation(map, arguments);
                         break;
-                    case "G": // CHANGE_FOOD_ALLOCATION
+                    case 20: // CHANGE_FOOD_ALLOCATION
                         changeFoodAllocation(map, arguments);
                         break;
-                    case "H": // ATTACK
+                    case 21: // ATTACK BUILDING BY INDEX
+                        attackByIndex(map, arguments);
+                        break;
+                    case 22: // ATTACK
                         attack(map, arguments);
                         break;
-                    case "I": // GET AVAILABLE BUILDINGS
+                    case 23: // GET AVAILABLE BUILDINGS
                         getAvailableBuildings(map, arguments);
                         break;
-                    case "J": // PLACE MANUAL ROAD
+                    case 24: // PLACE MANUAL ROAD
                         try {
                             placeManualRoad(map, arguments);
                         } catch (InvalidEndPointException e) {}
                         break;
-                    case "K": // GET POSSIBLE ADJACENT ROAD POINTS
+                    case 25: // GET POSSIBLE ADJACENT ROAD POINTS
                         getPossibleAdjacentRoadPoints(map, arguments);
                         break;
-                    case "L": // GET AVAILABLE FLAGS
+                    case 26: // GET AVAILABLE FLAGS
                         getAvailableFlags(map, arguments);
                         break;
-                    case "M": // GET AVAILABLE MINES
+                    case 27: // GET AVAILABLE MINES
                         getAvailableMines(map, arguments);
                         break;
-                    case "N": // EVACUATE BUILDING
+                    case 28: // EVACUATE BUILDING
                         evacuateBuilding(map, arguments);
                         break;
-                    case "O": // CANCEL EVACUATION
+                    case 29: // EVACUATE BUILDING BY INDEX
+                        evacuateBuildingByIndex(map, arguments);
+                        break;
+                    case 30: // CANCEL EVACUATION
                         cancelEvacuation(map, arguments);
                         break;
-                    case "P": // STOP RECEIVING COINS
+                    case 31: // CANCEL EVACUATION BY INDEX
+                        cancelEvacuationByIndex(map, arguments);
+                    case 32: // STOP RECEIVING COINS
                         stopReceivingCoins(map, arguments);
                         break;
-                    case "Q": // START RECEIVING COINS
+                    case 33: // STOP RECEIVING COINS IN HOUSE BY INDEX
+                        stopReceivingCoinsByIndex(map, arguments);
+                        break;
+                    case 34: // START RECEIVING COINS
                         startReceivingCoins(map, arguments);
                         break;
+                    case 35: // START RECEIVING COINS IN HOUSE BY INDEX
+                        startReceivingCoinsByIndex(map, arguments);
+                        break;
+                    case 36: // UPGRADE BUILDING
+                        upgradeBuilding(map, arguments);
+                        break;
+                    case 37: // UPGRADE BUILDING BY INDEX
+                        upgradeBuildingByIndex(map, arguments);
+                        break;
+                    case 38: // PUSH OUT MATERIAL BY INDEX
+                        pushOutMaterialByIndex(map, arguments);
+                        break;
+                    case 39: // PUSH OUT MATERIAL
+                        pushOutMaterial(map, arguments);
+                        break;
+                    case 40: // STOP STORAGE OF MATERIAL BY INDEX
+                        stopStorageOfMaterialByIndex(map, arguments);
+                        break;
+                    case 41: // STOP STORAGE OF MATERIAL
+                        stopStorageOfMaterial(map, arguments);
+                        break;
+                    case 42: // BUILD ROAD AUTOMATIC BY INDEX
+                        try {
+                            buildRoadAutomaticByIndex(map, arguments);
+                        } catch (InvalidEndPointException e) {
+                            e.printStackTrace();
+                        }
+                        break;
                     default:
-                        System.out.println("CAN'T HANDLE: '" + command + "'");
+                        System.out.println("CAN'T HANDLE: '" + commandIndex + "'");
                         return;
                 }
             } catch (SettlersModelDriverException e) {
                 System.out.println(e);
             } catch (InvalidUserActionException e) {
                 System.out.println(e);
+            } catch (EOFException e) {
+                return;
             }
         }
     }
 
+    private static void buildRoadAutomaticByIndex(GameMap map, ArgumentsHandler arguments) throws InvalidEndPointException, InvalidUserActionException, SettlersModelDriverException {
+        Player player;
+        Point start;
+        Point end;
+
+        try {
+            player = arguments.getPlayerFromChar(map);
+
+            start = arguments.getPointByIndex(map);
+            end = arguments.getPointByIndex(map);
+        } catch (Throwable t) {
+            throw new SettlersModelDriverException();
+        }
+
+        map.placeAutoSelectedRoad(player, start, end);
+    }
+
+    private static void stopStorageOfMaterial(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
+        Building building;
+        Material material;
+
+        try {
+            building = arguments.getBuildingFromCharByPoint(map);
+            material = arguments.getMaterialFromChar();
+
+            if (! (building instanceof Storehouse)) {
+                throw new SettlersModelDriverException();
+            }
+
+        } catch (Throwable t) {
+            throw new SettlersModelDriverException();
+        }
+
+        testCaseGenerator.recordStopStorageOfMaterial(building, material);
+
+        ((Storehouse) building).blockDeliveryOfMaterial(material);
+    }
+
+    private static void stopStorageOfMaterialByIndex(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
+        Building building;
+        Material material;
+
+        try {
+            building = arguments.getBuildingFromChar(map);
+            material = arguments.getMaterialFromChar();
+
+            if (! (building instanceof Storehouse)) {
+                throw new SettlersModelDriverException();
+            }
+
+        } catch (Throwable t) {
+            throw new SettlersModelDriverException();
+        }
+
+        testCaseGenerator.recordStopStorageOfMaterial(building, material);
+
+        ((Storehouse) building).blockDeliveryOfMaterial(material);
+    }
+
+    private static void pushOutMaterial(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
+        Building building;
+        Material material;
+
+        try {
+            building = arguments.getBuildingFromCharByPoint(map);
+            material = arguments.getMaterialFromChar();
+
+            if (! (building instanceof Storehouse)) {
+                throw new SettlersModelDriverException();
+            }
+
+        } catch (Throwable t) {
+            throw new SettlersModelDriverException();
+        }
+
+        testCaseGenerator.recordPushOutMaterial(building, material);
+
+        ((Storehouse) building).pushOutAll(material);
+    }
+
+    private static void pushOutMaterialByIndex(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
+        Building building;
+        Material material;
+
+        try {
+            building = arguments.getBuildingFromChar(map);
+            material = arguments.getMaterialFromChar();
+
+            if (! (building instanceof Storehouse)) {
+                throw new SettlersModelDriverException();
+            }
+
+        } catch (Throwable t) {
+            throw new SettlersModelDriverException();
+        }
+
+        testCaseGenerator.recordPushOutMaterial(building, material);
+
+        ((Storehouse) building).pushOutAll(material);
+    }
+
+    private static void upgradeBuildingByIndex(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException, InvalidUserActionException {
+        Building building;
+
+        try {
+            building = arguments.getBuildingFromChar(map);
+        } catch (Throwable t) {
+            throw new SettlersModelDriverException();
+        }
+
+        testCaseGenerator.recordUpgradeBuilding(building);
+
+        building.upgrade();
+    }
+
+    private static void startReceivingCoinsByIndex(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
+        Building building;
+
+        try {
+            building = arguments.getBuildingFromChar(map);
+        } catch (Throwable t) {
+            throw new SettlersModelDriverException();
+        }
+
+        testCaseGenerator.recordEnablePromotions(building);
+
+        building.enablePromotions();
+    }
+
+    private static void stopReceivingCoinsByIndex(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
+        Building building;
+
+        try {
+            building = arguments.getBuildingFromChar(map);
+        } catch (Throwable t) {
+            throw new SettlersModelDriverException();
+        }
+
+        testCaseGenerator.recordDisablePromotions(building);
+
+        building.disablePromotions();
+    }
+
+    private static void cancelEvacuationByIndex(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
+        Building building;
+
+        try {
+            building = arguments.getBuildingFromChar(map);
+        } catch (Throwable t) {
+            throw new SettlersModelDriverException();
+        }
+
+        testCaseGenerator.recordCancelEvacuation(building);
+
+        building.cancelEvacuation();
+    }
+
+    private static void evacuateBuildingByIndex(GameMap map, ArgumentsHandler arguments) throws InvalidRouteException, SettlersModelDriverException {
+        Building building;
+
+        try {
+            building = arguments.getBuildingFromChar(map);
+        } catch (Throwable t) {
+            throw new SettlersModelDriverException();
+        }
+
+        testCaseGenerator.recordEvacuate(building);
+
+        building.evacuate();
+    }
+
+    private static void attackByIndex(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException, InvalidRouteException, InvalidUserActionException {
+        Building building;
+        Player player;
+        int attackers;
+
+        try {
+            building = arguments.getBuildingFromChar(map);
+            player = arguments.getPlayerFromChar(map);
+            attackers = arguments.getUnsignedIntFor1Chars();
+        } catch (Throwable t) {
+            throw new SettlersModelDriverException();
+        }
+
+        testCaseGenerator.recordAttack(player, building, attackers);
+
+        player.attack(building, attackers);
+    }
+
+    private static void callGeologistAtFlagByIndex(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
+        Flag flag;
+
+        try {
+            flag = arguments.getFlagFromChar(map);
+        } catch (Throwable t) {
+            throw new SettlersModelDriverException();
+        }
+
+        testCaseGenerator.recordCallGeologist(flag);
+
+        flag.callGeologist();
+    }
+
+    private static void callScoutAtFlagByIndex(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
+        Flag flag;
+
+        try {
+            flag = arguments.getFlagFromChar(map);
+        } catch (Throwable t) {
+            throw new SettlersModelDriverException();
+        }
+
+        testCaseGenerator.recordCallScout(flag);
+
+        flag.callScout();
+    }
+
+    private static void tearDownBuildingByIndex(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException, InvalidRouteException, InvalidUserActionException {
+        Building building;
+
+        try {
+            building = arguments.getBuildingFromChar(map);
+        } catch (Throwable t) {
+            throw new SettlersModelDriverException();
+        }
+
+        testCaseGenerator.recordTearDownBuilding(building);
+
+        building.tearDown();
+    }
+
+    private static void deleteFlagByIndex(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException, InvalidRouteException, InvalidUserActionException {
+        Flag flag;
+
+        try {
+            flag = arguments.getFlagFromChar(map);
+        } catch (Throwable t) {
+            throw new SettlersModelDriverException();
+        }
+
+        testCaseGenerator.recordRemoveFlag(flag);
+
+        map.removeFlag(flag);
+    }
+
+    private static void deleteRoadByIndex(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException, InvalidRouteException, InvalidUserActionException {
+        Road road;
+
+        try {
+            road = arguments.getRoadFromChar(map);
+        } catch (Throwable t) {
+            throw new SettlersModelDriverException();
+        }
+
+        testCaseGenerator.recordRemoveRoad(road);
+
+        map.removeRoad(road);
+    }
+
+    private static void upgradeBuilding(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException, InvalidUserActionException {
+        Building building;
+
+        try {
+            Point point = arguments.getPointForChars();
+
+            building = map.getBuildingAtPoint(point);
+
+            if (building == null) {
+                throw new SettlersModelDriverException();
+            }
+        } catch (Throwable t) {
+            throw new SettlersModelDriverException();
+        }
+
+        testCaseGenerator.recordUpgradeBuilding(building);
+
+        building.upgrade();
+    }
+
     private static void startReceivingCoins(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
-        Building building = null;
+        Building building;
 
         try {
             Point point = arguments.getPointForChars();
@@ -234,7 +609,7 @@ public class SettlersModelDriver {
     }
 
     private static void stopReceivingCoins(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
-        Building building = null;
+        Building building;
 
         try {
             Point point = arguments.getPointForChars();
@@ -254,7 +629,7 @@ public class SettlersModelDriver {
     }
 
     private static void cancelEvacuation(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
-        Building building = null;
+        Building building;
 
         try {
             Point point = arguments.getPointForChars();
@@ -274,7 +649,7 @@ public class SettlersModelDriver {
     }
 
     private static void evacuateBuilding(GameMap map, ArgumentsHandler arguments) throws Exception {
-        Building building = null;
+        Building building;
 
         try {
             Point point = arguments.getPointForChars();
@@ -294,10 +669,10 @@ public class SettlersModelDriver {
     }
 
     private static void getAvailableMines(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
-        Player player = null;
+        Player player;
 
         try {
-            player = map.getPlayers().get(arguments.getIntFor1Chars());
+            player = arguments.getPlayerFromChar(map);
         } catch (Throwable t) {
             throw new SettlersModelDriverException();
         }
@@ -308,10 +683,10 @@ public class SettlersModelDriver {
     }
 
     private static void getAvailableFlags(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
-        Player player = null;
+        Player player;
 
         try {
-            player = map.getPlayers().get(arguments.getIntFor1Chars());
+            player = arguments.getPlayerFromChar(map);
         } catch (Throwable t) {
             throw new SettlersModelDriverException();
         }
@@ -321,12 +696,12 @@ public class SettlersModelDriver {
         map.getAvailableFlagPoints(player);
     }
 
-    private static void getPossibleAdjacentRoadPoints(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
-        Player player = null;
-        Point point = null;
+    private static void getPossibleAdjacentRoadPoints(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException, InvalidUserActionException {
+        Player player;
+        Point point;
 
         try {
-            player = map.getPlayers().get(arguments.getIntFor1Chars());
+            player = arguments.getPlayerFromChar(map);
 
             point = arguments.getPointForChars();
         } catch (Throwable t) {
@@ -339,18 +714,16 @@ public class SettlersModelDriver {
     }
 
     private static void placeManualRoad(GameMap map, ArgumentsHandler arguments) throws Exception {
-        Player player = null;
+        Player player;
         List<Point> points = new ArrayList<>();
 
         try {
-            player = map.getPlayers().get(arguments.getIntFor1Chars());
+            player = arguments.getPlayerFromChar(map);
 
-            int numberOfPoints = arguments.getIntFor2Chars();
+            int numberOfPoints = arguments.getUnsignedIntFor1Chars();
 
             for (int i = 0; i < numberOfPoints; i++) {
-                points.add(
-                    arguments.getPointForChars()
-                );
+                points.add(arguments.getPointForChars());
             }
 
         } catch (Throwable t) {
@@ -363,10 +736,10 @@ public class SettlersModelDriver {
     }
 
     private static void getAvailableBuildings(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
-        Player player = null;
+        Player player;
 
         try {
-            player = map.getPlayers().get(arguments.getIntFor1Chars());
+            player = arguments.getPlayerFromChar(map);
 
             if (player == null) {
                 throw new SettlersModelDriverException();
@@ -381,14 +754,16 @@ public class SettlersModelDriver {
     }
 
     private static void attack(GameMap map, ArgumentsHandler arguments) throws Exception {
-        Player attacker = null;
-        Building building = null;
+        Player attacker;
+        Building building;
         int attackers = 0;
 
         try {
-            attacker = map.getPlayers().get(arguments.getIntFor1Chars());
+            attacker = arguments.getPlayerFromChar(map);
 
             building = map.getBuildingAtPoint(arguments.getPointForChars());
+
+            attackers = arguments.getUnsignedIntFor1Chars();
 
             if (building == null) {
                 throw new SettlersModelDriverException();
@@ -403,14 +778,16 @@ public class SettlersModelDriver {
     }
 
     private static void changeFoodAllocation(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
-        Player player = null;
-        Class<? extends Building> buildingClass = null;
+        Player player;
+        Class<? extends Building> buildingClass;
         int quota = 0;
 
         try {
-            player = map.getPlayers().get(arguments.getIntFor1Chars());
+            player = arguments.getPlayerFromChar(map);
 
-            int type = arguments.getIntFor1Chars();
+            int type = arguments.getUnsignedIntFor1Chars();
+
+            type = type % 4;
 
             if (type == 0) {
                 buildingClass = CoalMine.class;
@@ -424,7 +801,7 @@ public class SettlersModelDriver {
                 throw new SettlersModelDriverException();
             }
 
-            quota = arguments.getIntFor2Chars();
+            quota = arguments.getUnsignedIntFor1Chars();
         } catch (Throwable t) {
             System.out.println("CHANGE FOOD ALLOCATION - FAILED");
 
@@ -441,15 +818,16 @@ public class SettlersModelDriver {
     }
 
     private static void changeCoalAllocation(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
-        Player player = null;
-        Class<? extends Building> buildingClass = null;
+        Player player;
+        Class<? extends Building> buildingClass;
         int quota = 0;
 
         try {
-            buildingClass = buildingClassMap.get(arguments.getIntFor2Chars());
-            quota = arguments.getIntFor2Chars();
+            player = arguments.getPlayerFromChar(map);
+            buildingClass = buildingClassMap.get(arguments.getUnsignedIntFor1Chars() % buildingClassMap.size());
+            quota = arguments.getUnsignedIntFor1Chars();
 
-            if (player == null) {
+            if (player == null || buildingClass == null) {
                 throw new SettlersModelDriverException();
             }
         } catch (Throwable t) {
@@ -468,16 +846,16 @@ public class SettlersModelDriver {
     }
 
     private static void changeTransportationPriority(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException, InvalidUserActionException {
-        Player player = null;
+        Player player;
         int priority = 0;
-        Material material = null;
+        TransportCategory transportCategory;
 
         try {
-            player = map.getPlayers().get(arguments.getIntFor1Chars());
+            player = arguments.getPlayerFromChar(map);
 
-            material = Material.values()[arguments.getIntFor2Chars()];
+            transportCategory = TransportCategory.values()[arguments.getUnsignedIntFor1Chars() % TransportCategory.values().length];
 
-            priority = arguments.getIntFor2Chars();
+            priority = arguments.getUnsignedIntFor1Chars();
 
             if (player == null) {
                 throw new SettlersModelDriverException();
@@ -490,21 +868,18 @@ public class SettlersModelDriver {
 
         System.out.println("CHANGE TRANSPORTATION PRIORITY");
         System.out.println(" - Priority: " + priority);
-        System.out.println(" - Material: " + material);
+        System.out.println(" - Material: " + transportCategory);
 
-        testCaseGenerator.recordSetTransportPriority(player, priority, material);
+        testCaseGenerator.recordSetTransportPriority(player, priority, transportCategory);
 
-        player.setTransportPriority(priority, material);
+        player.setTransportPriority(priority, transportCategory);
     }
 
     private static void callScout(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
-        Flag flag = null;
+        Flag flag;
 
         try {
-            Point point = new Point(
-                    arguments.getIntFor3Chars(),
-                    arguments.getIntFor3Chars()
-            );
+            Point point = arguments.getPointForChars();
 
             flag = map.getFlagAtPoint(point);
 
@@ -526,13 +901,10 @@ public class SettlersModelDriver {
     }
 
     private static void callGeologist(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
-        Flag flag = null;
+        Flag flag;
 
         try {
-            Point point = new Point(
-                    arguments.getIntFor3Chars(),
-                    arguments.getIntFor3Chars()
-            );
+            Point point = arguments.getPointForChars();
 
             flag = map.getFlagAtPoint(point);
 
@@ -554,11 +926,10 @@ public class SettlersModelDriver {
     }
 
     private static void stopProduction(GameMap map, ArgumentsHandler arguments) throws Exception {
-        Building building = null;
+        Building building;
 
         try {
-            int buildingIndex = arguments.getIntFor2Chars();
-            building = map.getBuildings().get(buildingIndex);
+            building = arguments.getBuildingFromChar(map);
         } catch (Throwable t) {
             System.out.println("STOP PRODUCTION - FAILED");
 
@@ -568,15 +939,16 @@ public class SettlersModelDriver {
         System.out.println("STOP PRODUCTION");
         System.out.println(" - Building: " + building);
 
+        testCaseGenerator.recordStopProduction(building);
+
         building.stopProduction();
     }
 
-    private static void startProduction(GameMap map, ArgumentsHandler arguments) throws Exception {
-        Building building = null;
+    private static void startProductionInHouseByIndex(GameMap map, ArgumentsHandler arguments) throws Exception {
+        Building building;
 
         try {
-            int buildingIndex = arguments.getIntFor2Chars();
-            building = map.getBuildings().get(buildingIndex);
+            building = arguments.getBuildingFromChar(map);
         } catch (Throwable t) {
             System.out.println("START PRODUCTION - FAILED");
 
@@ -586,35 +958,26 @@ public class SettlersModelDriver {
         System.out.println("START PRODUCTION");
         System.out.println(" - Building: " + building);
 
+        testCaseGenerator.recordResumeProduction(building);
+
         building.resumeProduction();
     }
 
     private static void setVegetationDownRight(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
-        Tile.Vegetation vegetation = null;
-        Point point = null;
-        Tile tile = null;
+        Vegetation vegetation;
+        Point point;
 
         try {
 
-            int vegetationInt = arguments.getIntFor1Chars();
+            int vegetationInt = arguments.getUnsignedIntFor1Chars();
 
             if (!vegetationMap.containsKey(vegetationInt)) {
-                throw new Exception();
+                throw new SettlersModelDriverException();
             }
 
             vegetation = vegetationMap.get(vegetationInt);
 
-            point = new Point(
-                    arguments.getIntFor3Chars(),
-                    arguments.getIntFor3Chars()
-            );
-
-            tile = map.getTerrain().getTileDownRight(point);
-
-            if (tile == null) {
-                throw new SettlersModelDriverException();
-            }
-
+            point = new Point(arguments.getIntFor3Chars(), arguments.getIntFor3Chars());
         } catch (Throwable t) {
             System.out.println("SET VEGETATION DOWN RIGHT - FAILED");
 
@@ -625,35 +988,25 @@ public class SettlersModelDriver {
         System.out.println(" - Point: " + point);
         System.out.println(" - Vegetation: " + vegetation);
 
-        tile.setVegetationType(vegetation);
+        testCaseGenerator.recordSetVegetationDownRight(point, vegetation);
 
+        map.setTileDownRight(point, vegetation);
     }
 
     private static void setVegetationBelow(GameMap map, ArgumentsHandler arguments) throws SettlersModelDriverException {
-        Tile.Vegetation vegetation = null;
-        Tile tile = null;
-        Point point = null;
+        Vegetation vegetation;
+        Point point;
 
         try {
-            int vegetationInt = arguments.getIntFor1Chars();
+            int vegetationInt = arguments.getUnsignedIntFor1Chars();
 
             if (!vegetationMap.containsKey(vegetationInt)) {
-                throw new Exception();
-            }
-
-            vegetation = vegetationMap.get(vegetationInt);
-
-            point = new Point(
-                    arguments.getIntFor3Chars(),
-                    arguments.getIntFor3Chars()
-            );
-
-            tile = map.getTerrain().getTileBelow(point);
-
-            if (tile == null) {
                 throw new SettlersModelDriverException();
             }
 
+            vegetation = Vegetation.values()[vegetationInt];
+
+            point = arguments.getPointForChars();
         } catch (Throwable t) {
             System.out.println("SET VEGETATION BELOW - FAILED");
 
@@ -664,7 +1017,9 @@ public class SettlersModelDriver {
         System.out.println(" - Point: " + point);
         System.out.println(" - Vegetation: " + vegetation);
 
-        tile.setVegetationType(vegetation);
+        testCaseGenerator.recordSetVegetationBelow(point, vegetation);
+
+        map.setTileBelow(point, vegetation);
     }
 
     /**
@@ -676,13 +1031,10 @@ public class SettlersModelDriver {
      * @throws Exception
      */
     private static void deleteBuilding(GameMap map, ArgumentsHandler arguments) throws Exception {
-        Building building = null;
+        Building building;
 
         try {
-            Point point = new Point(
-                    arguments.getIntFor3Chars(),
-                    arguments.getIntFor3Chars()
-            );
+            Point point = arguments.getPointForChars();
             building = map.getBuildingAtPoint(point);
 
             if (building == null) {
@@ -698,6 +1050,8 @@ public class SettlersModelDriver {
         System.out.println("DELETE_BUILDING_AT_POINT");
         System.out.println(" - Building: " + building);
 
+        testCaseGenerator.recordTearDownBuilding(building);
+
         building.tearDown();
     }
 
@@ -709,16 +1063,13 @@ public class SettlersModelDriver {
      * @param arguments
      */
     private static void raiseBuilding(GameMap map, ArgumentsHandler arguments) throws Exception {
-        Building building = null;
-        Point point = null;
+        Building building;
+        Point point;
 
         try {
-            Player player = map.getPlayers().get(arguments.getIntFor1Chars());
-            building = createBuilding(player, arguments.getIntFor2Chars());
-            point = new Point(
-                    arguments.getIntFor3Chars(),
-                    arguments.getIntFor3Chars()
-            );
+            Player player = arguments.getPlayerFromChar(map);
+            building = createBuilding(player, arguments.getUnsignedIntFor1Chars() % buildingClassMap.size());
+            point = arguments.getPointForChars();
         } catch (Throwable t) {
             System.out.println("RAISE BUILDING - FAILED");
 
@@ -739,37 +1090,20 @@ public class SettlersModelDriver {
 
         Constructor<?> constructor = buildingClass.getConstructor(Player.class);
 
-        Building building =  (Building)constructor.newInstance(player);
-
-        //System.out.println("Created " + building);
+        Building building = (Building)constructor.newInstance(player);
 
         return building;
     }
 
-    private static List<String> stringToArguments(String substring) {
-        String remaining = substring;
-        List<String> arguments = new ArrayList<>();
-
-        while (remaining.length() > 0) {
-            arguments.add(remaining.substring(0, 2));
-
-            if (remaining.length() > 2) {
-                remaining = remaining.substring(2);
-            } else {
-                break;
-            }
-        }
-
-        return arguments;
-    }
-
     private static void fastForward(GameMap map, ArgumentsHandler arguments) throws Exception {
 
-        int iterations = 0;
+        int iterations;
 
         try {
+            int arg1 = arguments.getUnsignedIntFor1Chars();
+            int arg2 = arguments.getUnsignedIntFor1Chars();
 
-            iterations = arguments.getIntFor3Chars();
+            iterations = arg1 * arg2;
 
             if (iterations < 1 || iterations > 2000) {
                 return;
@@ -792,14 +1126,10 @@ public class SettlersModelDriver {
     }
 
     private static void deleteFlagAtPoint(GameMap map, ArgumentsHandler arguments) throws Exception {
-
-        Flag flag = null;
+        Flag flag;
 
         try {
-            Point point = new Point(
-                    arguments.getIntFor3Chars(),
-                    arguments.getIntFor3Chars()
-            );
+            Point point = arguments.getPointForChars();
 
             flag = map.getFlagAtPoint(point);
         } catch (Throwable t) {
@@ -825,18 +1155,13 @@ public class SettlersModelDriver {
      * @throws Exception
      */
     private static void raiseFlag(GameMap map, ArgumentsHandler arguments) throws Exception {
-        Player player = null;
-        Point point = null;
+        Player player;
+        Point point;
 
         try {
-            int playerIndex = arguments.getIntFor1Chars();
+            player = arguments.getPlayerFromChar(map);
 
-            point = new Point(
-                    arguments.getIntFor3Chars(),
-                    arguments.getIntFor3Chars()
-            );
-
-            player = map.getPlayers().get(playerIndex);
+            point = arguments.getPointForChars();
         } catch (Throwable t) {
             System.out.println("RAISE FLAG - FAILED");
 
@@ -859,20 +1184,16 @@ public class SettlersModelDriver {
      */
     private static void deleteRoadAtPoint(GameMap map, ArgumentsHandler arguments) throws Exception {
 
-        Road road = null;
+        Road road;
 
         try {
-            Point point = new Point(
-                    arguments.getIntFor3Chars(),
-                    arguments.getIntFor3Chars()
-            );
+            Point point = arguments.getPointForChars();
 
             road = map.getRoadAtPoint(point);
 
             if (road == null) {
                 throw new SettlersModelDriverException();
             }
-
         } catch (Throwable t) {
             System.out.println("DELETE ROAD AT POINT - FAILED");
 
@@ -881,6 +1202,8 @@ public class SettlersModelDriver {
 
         System.out.println("DELETE ROAD AT POINT");
         System.out.println(" - Road: " + road);
+
+        testCaseGenerator.recordRemoveRoad(road);
 
         map.removeRoad(road);
     }
@@ -901,23 +1224,16 @@ public class SettlersModelDriver {
      */
     private static void buildRoadAutomatic(GameMap map, ArgumentsHandler arguments) throws Exception {
 
-        Point start = null;
-        Point end = null;
-        Player player = null;
+        Point start;
+        Point end;
+        Player player;
 
         try {
-            int playerIndex = arguments.getIntFor1Chars();
+            player = arguments.getPlayerFromChar(map);
 
-            start = new Point(
-                    arguments.getIntFor3Chars(),
-                    arguments.getIntFor3Chars()
-            );
-            end = new Point(
-                    arguments.getIntFor3Chars(),
-                    arguments.getIntFor3Chars()
-            );
+            start = arguments.getPointForChars();
+            end = arguments.getPointForChars();
 
-            player = map.getPlayers().get(playerIndex);
         } catch (Throwable t) {
             System.out.println("PLACE ROAD AUTOMATICALLY - FAILED");
 

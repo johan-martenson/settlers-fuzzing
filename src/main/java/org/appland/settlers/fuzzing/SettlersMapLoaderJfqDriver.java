@@ -4,6 +4,7 @@ import java.io.InputStream;
 
 import edu.berkeley.cs.jqf.fuzz.Fuzz;
 import edu.berkeley.cs.jqf.fuzz.JQF;
+import org.appland.settlers.maps.InvalidMapException;
 import org.appland.settlers.maps.MapFile;
 import org.appland.settlers.maps.MapLoader;
 import org.appland.settlers.maps.SettlersMapLoadingException;
@@ -22,6 +23,9 @@ public class SettlersMapLoaderJfqDriver {
         try {
             MapFile mapFile = mapLoader.loadMapFromStream(input);
         } catch (SettlersMapLoadingException e) {
+            e.printStackTrace();
+            Assume.assumeNoException(e);
+        } catch (InvalidMapException e) {
             e.printStackTrace();
             Assume.assumeNoException(e);
         }

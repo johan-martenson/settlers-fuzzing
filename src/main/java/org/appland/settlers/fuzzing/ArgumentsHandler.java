@@ -1,10 +1,17 @@
 package org.appland.settlers.fuzzing;
 
+import org.appland.settlers.model.Building;
+import org.appland.settlers.model.Flag;
+import org.appland.settlers.model.GameMap;
+import org.appland.settlers.model.Material;
+import org.appland.settlers.model.Player;
 import org.appland.settlers.model.Point;
+import org.appland.settlers.model.Road;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 public class ArgumentsHandler {
 
@@ -18,7 +25,11 @@ public class ArgumentsHandler {
 
         byte[] bytes = new byte[3];
 
-        inputStream.read(bytes, 0, 3);
+        int result = inputStream.read(bytes, 0, 3);
+
+        if (result == -1) {
+            throw new EOFException();
+        }
 
         String remaining = new String(bytes, "ISO-8859-1");
 
@@ -26,16 +37,18 @@ public class ArgumentsHandler {
             throw new SettlersModelDriverException();
         }
 
-        int result = Integer.parseInt(remaining.substring(0, 3));
-
-        return result;
+        return Integer.parseInt(remaining.substring(0, 3));
     }
 
     int getIntFor2Chars() throws SettlersModelDriverException, IOException {
 
         byte[] bytes = new byte[3];
 
-        inputStream.read(bytes, 0, 2);
+        int result = inputStream.read(bytes, 0, 2);
+
+        if (result == -1) {
+            throw new EOFException();
+        }
 
         String remaining = new String(bytes, "ISO-8859-1");
 
@@ -43,38 +56,92 @@ public class ArgumentsHandler {
             throw new SettlersModelDriverException();
         }
 
-        int result = Integer.parseInt(remaining.substring(0, 2));
-
-        return result;
+        return Integer.parseInt(remaining.substring(0, 2));
     }
-    int getIntFor1Chars() throws SettlersModelDriverException, IOException {
-        byte[] bytes = new byte[3];
 
-        inputStream.read(bytes, 0, 1);
+    int getUnsignedIntFor1Chars() throws IOException {
+        byte[] bytes = new byte[1];
 
-        String remaining = new String(bytes, "ISO-8859-1");
+        int result = inputStream.read(bytes, 0, 1);
 
-        if (remaining.length() < 1) {
-            throw new SettlersModelDriverException();
+        if (result == -1) {
+            throw new EOFException();
         }
 
-        int result = Integer.parseInt(remaining.substring(0, 1));
-
-        return result;
+        return Math.abs(bytes[0]);
     }
 
     public String getChar() throws IOException {
         byte[] bytes = new byte[1];
 
-        inputStream.read(bytes, 0, 1);
+        int result = inputStream.read(bytes, 0, 1);
+
+        if (result == -1) {
+            throw new EOFException();
+        }
 
         return new String(bytes, "ISO-8859-1");
     }
 
-    public Point getPointForChars() throws IOException, SettlersModelDriverException {
+    public Point getPointForChars() throws IOException {
         return new Point(
-            getIntFor3Chars(),
-            getIntFor3Chars()
+            getUnsignedIntFor1Chars(),
+            getUnsignedIntFor1Chars()
         );
+    }
+
+    public Player getPlayerFromChar(GameMap map) throws IOException {
+        int playerIndex = getUnsignedIntFor1Chars();
+
+        List<Player> players = map.getPlayers();
+
+        return players.get(playerIndex % players.size());
+    }
+
+    public Building getBuildingFromChar(GameMap map) throws IOException {
+        int index = getUnsignedIntFor1Chars();
+
+        return map.getBuildings().get(index % map.getBuildings().size());
+    }
+
+    public Flag getFlagFromChar(GameMap map) throws IOException {
+        int index = getUnsignedIntFor1Chars();
+
+        return map.getFlags().get(index % map.getFlags().size());
+    }
+
+    public Road getRoadFromChar(GameMap map) throws IOException {
+        int index = getUnsignedIntFor1Chars();
+
+        return map.getRoads().get(index % map.getRoads().size());
+    }
+
+    public Material getMaterialFromChar() throws IOException {
+        int index = getUnsignedIntFor1Chars();
+
+        return Material.values()[index % Material.values().length];
+    }
+
+    public Building getBuildingFromCharByPoint(GameMap map) throws IOException {
+        Point point = getPointForChars();
+
+        return map.getBuildingAtPoint(point);
+    }
+
+    public Point getPointByIndex(GameMap map) throws IOException {
+        int pointsPerRow = map.getWidth() / 2;
+
+        int largeNumber = getUnsignedIntFor1Chars() * getUnsignedIntFor1Chars();
+        int amountOfPointsInMap = (pointsPerRow) * map.getHeight();
+        int index = largeNumber % amountOfPointsInMap;
+
+        int y = (int) Math.round((double)index / (double)pointsPerRow);
+        int x = largeNumber % pointsPerRow;
+
+        if (y % 2 == 0) {
+            return new Point(x * 2, y);
+        }
+
+        return new Point(x * 2 + 1, y);
     }
 }

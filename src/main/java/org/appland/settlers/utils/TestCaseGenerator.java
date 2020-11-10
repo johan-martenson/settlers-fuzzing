@@ -1,11 +1,6 @@
 package org.appland.settlers.utils;
 
-import org.appland.settlers.model.Building;
-import org.appland.settlers.model.Flag;
-import org.appland.settlers.model.GameMap;
-import org.appland.settlers.model.Material;
-import org.appland.settlers.model.Player;
-import org.appland.settlers.model.Point;
+import org.appland.settlers.model.*;
 
 import java.util.List;
 
@@ -14,7 +9,7 @@ public class TestCaseGenerator {
         printStartTry();
 
         System.out.println(
-                "map.placeBuilding(" +
+                "    map.placeBuilding(" +
                     "new " + building.getClass().getName() + "(player)" +
                     ", " + printPoint(point) +
                 ");"
@@ -32,7 +27,7 @@ public class TestCaseGenerator {
     public void recordPlaceFlag(Player player, Point point) {
         printStartTry();
 
-        System.out.println("map.placeFlag(player, " + printPoint(point) + ");");
+        System.out.println("    map.placeFlag(\"" + player.getName() + "\", " + printPoint(point) + ");");
 
         System.out.println();
 
@@ -42,7 +37,7 @@ public class TestCaseGenerator {
     public void recordCallScout(Flag flag) {
         printStartTry();
 
-        System.out.println("map.getFlagAtPoint(" + printPoint(flag.getPosition()) + ").callScout();");
+        System.out.println("    map.getFlagAtPoint(" + printPoint(flag.getPosition()) + ").callScout();");
 
         System.out.println();
 
@@ -53,7 +48,7 @@ public class TestCaseGenerator {
     public void recordCallGeologist(Flag flag) {
         printStartTry();
 
-        System.out.println("map.getFlagAtPoint(" + printPoint(flag.getPosition()) + ").callGeologist();");
+        System.out.println("    map.getFlagAtPoint(" + printPoint(flag.getPosition()) + ").callGeologist();");
 
         System.out.println();
 
@@ -64,7 +59,7 @@ public class TestCaseGenerator {
         printStartTry();
 
         System.out.println(
-                "map.placeAutoSelectedRoad(player, " +
+                "    map.placeAutoSelectedRoad(player, " +
                     printPoint(start) + ", " +
                     printPoint(end) +
                 ");");
@@ -77,7 +72,7 @@ public class TestCaseGenerator {
     public void recordFastForward(int iterations, GameMap map) {
         printStartTry();
 
-        System.out.println("Utils.fastForward(" + iterations + ", map);");
+        System.out.println("    Utils.fastForward(" + iterations + ", map);");
 
         System.out.println();
 
@@ -87,10 +82,14 @@ public class TestCaseGenerator {
     public void recordRemoveFlag(Flag flag) {
         printStartTry();
 
+        Point point = null;
+
+        if (flag != null) {
+            point = flag.getPosition();
+        }
+
         System.out.println(
-                "map.removeFlag(" +
-                    "map.getFlagAtPoint(" + printPoint(flag.getPosition()) +
-                "));"
+                "    map.removeFlag(" + "map.getFlagAtPoint(" + point + "));"
         );
 
         System.out.println();
@@ -110,7 +109,7 @@ public class TestCaseGenerator {
         printStartTry();
 
         System.out.println(
-                "map.getBuildingAtPoint(" +
+                "    map.getBuildingAtPoint(" +
                         printPoint(building.getPosition()) +
                 ").enablePromotions();"
         );
@@ -122,7 +121,7 @@ public class TestCaseGenerator {
         printStartTry();
 
         System.out.println(
-                "map.getBuildingAtPoint(" +
+                "    map.getBuildingAtPoint(" +
                         printPoint(building.getPosition()) +
                         ").disablePromotions();"
         );
@@ -134,33 +133,31 @@ public class TestCaseGenerator {
         printStartTry();
 
         System.out.println(
-                "map.getBuildingAtPoint(" +
+                "    map.getBuildingAtPoint(" +
                         printPoint(building.getPosition()) +
                         ").cancelEvacuation();"
         );
 
         printEndTry();
-
     }
 
     public void recordEvacuate(Building building) {
         printStartTry();
 
         System.out.println(
-                "map.getBuildingAtPoint(" +
+                "    map.getBuildingAtPoint(" +
                         printPoint(building.getPosition()) +
                         ").evacuate();"
         );
 
         printEndTry();
-
     }
 
     public void recordGetAvailableMines(Player player) {
         printStartTry();
 
         System.out.println(
-                "map.getAvailableMines(" + player.getName() + ");"
+                "    map.getAvailableMines(" + player.getName() + ");"
         );
 
         printEndTry();
@@ -169,9 +166,7 @@ public class TestCaseGenerator {
     public void recordGetAvailableFlags(Player player) {
         printStartTry();
 
-        System.out.println(
-                "map.getAvailableFlags(" + player.getName() + ");"
-        );
+        System.out.println("    map.getAvailableFlags(" + player.getName() + ");");
 
         printEndTry();
     }
@@ -179,9 +174,7 @@ public class TestCaseGenerator {
     public void recordGetPossibleAdjacentRoadPoints(Point point, Player player) {
         printStartTry();
 
-        System.out.println(
-                "map.getPossibleAdjacentRoadPoints(" + player.getName() + ", " + printPoint(point) + ");"
-        );
+        System.out.println("    map.getPossibleAdjacentRoadPoints(" + player.getName() + ", " + printPoint(point) + ");");
 
         printEndTry();
     }
@@ -189,7 +182,7 @@ public class TestCaseGenerator {
     public void recordPlaceRoad(Player player, List<Point> points) {
         printStartTry();
 
-        System.out.print("map.placeRoad(" + player.getName() + ", ");
+        System.out.print("    map.placeRoad(" + player.getName() + ", ");
 
         boolean first = true;
 
@@ -209,9 +202,7 @@ public class TestCaseGenerator {
     public void recordGetAvailableHousePoints(Player player) {
         printStartTry();
 
-        System.out.println(
-                "map.getAvailableHousePoints(" + player.getName() + ");"
-        );
+        System.out.println("    map.getAvailableHousePoints(" + player.getName() + ");");
 
         printEndTry();
     }
@@ -220,7 +211,7 @@ public class TestCaseGenerator {
         printStartTry();
 
         System.out.println(
-                attacker.getName() + ".attack(map.getBuildingAtPoint(" + printPoint(building.getPosition()) + "), " + attackers + ");"
+                "    " + attacker.getName() + ".attack(map.getBuildingAtPoint(" + printPoint(building.getPosition()) + "), " + attackers + ");"
         );
 
         printEndTry();
@@ -230,9 +221,7 @@ public class TestCaseGenerator {
     public void recordSetFoodQuota(Player player, Class<? extends Building> buildingClass, int quota) {
         printStartTry();
 
-        System.out.println(
-                player.getName() + ".setFoodQuota(" + buildingClass.getSimpleName() + ", " + quota + ");"
-        );
+        System.out.println("    " + player.getName() + ".setFoodQuota(" + buildingClass.getSimpleName() + ", " + quota + ");");
 
         printEndTry();
     }
@@ -241,18 +230,102 @@ public class TestCaseGenerator {
         printStartTry();
 
         System.out.println(
-                player.getName() + ".setCoalQuota(" + buildingClass.getSimpleName() + ", " + quota + ");"
+                "    " + player.getName() + ".setCoalQuota(" +
+                        buildingClass == null ? "null" : buildingClass.getSimpleName() +
+                        ", " + quota + ");"
         );
 
         printEndTry();
     }
 
-    public void recordSetTransportPriority(Player player, int priority, Material material) {
+    public void recordSetTransportPriority(Player player, int priority, TransportCategory material) {
         printStartTry();
 
-        System.out.println(
-                player.getName() + ".setTransportPriority(" + priority + ", " + material.name() + ");"
-        );
+        System.out.println("    " + player.getName() + ".setTransportPriority(" + priority + ", " + material.name() + ");");
+
+        printEndTry();
+    }
+
+    public void recordUpgradeBuilding(Building building) {
+        printStartTry();
+
+        System.out.println("    map.getBuildingAtPoint(" + printPoint(building.getPosition()) + ").upgrade();");
+
+        printEndTry();
+    }
+
+    public void recordRemoveRoad(Road road) {
+        printStartTry();
+
+        System.out.println("    map.removeRoadAtPoint(" + road.getWayPoints() + ");");
+
+        printEndTry();
+    }
+
+    public void recordTearDownBuilding(Building building) {
+        printStartTry();
+
+        System.out.println("    map.getBuildingAtPoint(" + building.getPosition() + ".tearDown());");
+
+        printEndTry();
+    }
+
+    public void recordStopProduction(Building building) {
+        printStartTry();
+
+        System.out.println("    map.getBuildingAtPoint(" + building.getPosition() + ".stopProduction());");
+
+        printEndTry();
+    }
+
+    public void recordResumeProduction(Building building) {
+        printStartTry();
+
+        System.out.println("    map.getBuildingAtPoint(" + building.getPosition() + ".resumeProduction());");
+
+        printEndTry();
+    }
+
+    public void recordSetVegetationDownRight(Point point, Vegetation vegetation) {
+        printStartTry();
+
+        System.out.println("    map.setVegetationDownRight(" + point + ", " + vegetation + ");");
+
+        printEndTry();
+    }
+
+    public void recordSetVegetationBelow(Point point, Vegetation vegetation) {
+        printStartTry();
+
+        System.out.println("    map.setVegetationBelow(" + point + ", " + vegetation + ");");
+
+        printEndTry();
+    }
+
+    public void recordPushOutMaterial(Building building, Material material) {
+        Point point = null;
+
+        if (building != null) {
+            point = building.getPosition();
+        }
+
+        printStartTry();
+
+        System.out.println("    map.getBuildingAtPoint(" + point + ").pushOutMaterial(" + material + ");");
+
+        printEndTry();
+    }
+
+    public void recordStopStorageOfMaterial(Building building, Material material) {
+        Point point = null;
+
+        if (building != null) {
+            point = building.getPosition();
+        }
+
+        printStartTry();
+
+        System.out.println("    map.getBuildingAtPoint(" + point + ").blockStorageOfMaterial(" + material + ");");
 
         printEndTry();
     }
